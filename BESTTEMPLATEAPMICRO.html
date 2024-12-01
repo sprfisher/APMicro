@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split-Screen Quiz Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .team {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .team.left {
+      background-color: lightblue;
+    }
+    .team.right {
+      background-color: lightgreen;
+    }
+    .question {
+      text-align: center;
+      padding: 20px;
+      background-color: #f8f9fa;
+      position: absolute;
+      width: 100%;
+      top: 10%;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .scoreboard {
+      position: absolute;
+      top: 2%;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .choices button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+    .choices button:hover {
+      background-color: #ddd;
+    }
+    .choices button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="scoreboard">Team 1: 0 | Team 2: 0</div>
+  <div class="question">What happens to the equilibrium price if demand increases?</div>
+  <div class="container">
+    <div class="team left">
+      <h2>Team 1</h2>
+      <div class="choices" id="team1-choices">
+        <button onclick="checkAnswer('team1', 'A')">A. Decreases</button>
+        <button onclick="checkAnswer('team1', 'B')">B. Increases</button>
+        <button onclick="checkAnswer('team1', 'C')">C. Stays the same</button>
+        <button onclick="checkAnswer('team1', 'D')">D. None</button>
+      </div>
+    </div>
+    <div class="team right">
+      <h2>Team 2</h2>
+      <div class="choices" id="team2-choices">
+        <button onclick="checkAnswer('team2', '1')">1. Decreases</button>
+        <button onclick="checkAnswer('team2', '2')">2. Increases</button>
+        <button onclick="checkAnswer('team2', '3')">3. Stays the same</button>
+        <button onclick="checkAnswer('team2', '4')">4. None</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+const questions = [
+  {
+    question: "What is the relationship between price elasticity of demand and total revenue?",
+    choicesTeam1: [
+      "A. When demand is elastic, lowering price increases total revenue",
+      "B. When demand is elastic, raising price increases total revenue",
+      "C. When demand is inelastic, lowering price increases total revenue",
+      "D. When demand is unit elastic, total revenue always decreases"
+    ],
+    choicesTeam2: [
+      "1. When demand is elastic, lowering price increases total revenue",
+      "2. When demand is elastic, raising price increases total revenue",
+      "3. When demand is inelastic, lowering price increases total revenue",
+      "4. When demand is unit elastic, total revenue always decreases"
+    ],
+    correctTeam1: "A",
+    correctTeam2: "1",
+    explanation: "When demand is elastic, lowering the price causes a proportionally larger increase in quantity demanded, increasing total revenue."
+  },
+  {
+    question: "What happens to marginal cost when diminishing marginal returns set in?",
+    choicesTeam1: [
+      "A. Marginal cost decreases",
+      "B. Marginal cost increases",
+      "C. Marginal cost stays constant",
+      "D. Marginal cost becomes negative"
+    ],
+    choicesTeam2: [
+      "1. Marginal cost decreases",
+      "2. Marginal cost increases",
+      "3. Marginal cost stays constant",
+      "4. Marginal cost becomes negative"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "When diminishing marginal returns set in, additional units of input yield less output, causing marginal cost to rise."
+  },
+  {
+    question: "Which of the following best describes allocative efficiency?",
+    choicesTeam1: [
+      "A. When a firm produces at the lowest possible cost",
+      "B. When resources are distributed to maximize consumer satisfaction",
+      "C. When marginal revenue equals marginal cost",
+      "D. When a monopoly produces at the profit-maximizing output"
+    ],
+    choicesTeam2: [
+      "1. When a firm produces at the lowest possible cost",
+      "2. When resources are distributed to maximize consumer satisfaction",
+      "3. When marginal revenue equals marginal cost",
+      "4. When a monopoly produces at the profit-maximizing output"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "Allocative efficiency occurs when goods are distributed to maximize total societal welfare, where price equals marginal cost (P = MC)."
+  },
+  {
+    question: "Which market structure is characterized by a large number of firms producing differentiated products?",
+    choicesTeam1: [
+      "A. Perfect competition",
+      "B. Monopoly",
+      "C. Oligopoly",
+      "D. Monopolistic competition"
+    ],
+    choicesTeam2: [
+      "1. Perfect competition",
+      "2. Monopoly",
+      "3. Oligopoly",
+      "4. Monopolistic competition"
+    ],
+    correctTeam1: "D",
+    correctTeam2: "4",
+    explanation: "Monopolistic competition involves many firms producing similar but not identical products, with some control over price."
+  },
+  {
+    question: "A profit-maximizing firm in a perfectly competitive market will produce at which point?",
+    choicesTeam1: [
+      "A. Where marginal cost equals marginal revenue",
+      "B. Where price equals marginal cost",
+      "C. Where price equals average total cost",
+      "D. Both A and B"
+    ],
+    choicesTeam2: [
+      "1. Where marginal cost equals marginal revenue",
+      "2. Where price equals marginal cost",
+      "3. Where price equals average total cost",
+      "4. Both A and B"
+    ],
+    correctTeam1: "D",
+    correctTeam2: "4",
+    explanation: "In perfect competition, profit maximization occurs where marginal cost equals marginal revenue (MC = MR) and where price equals marginal cost (P = MC)."
+  },
+  {
+    question: "If the income elasticity of demand for a good is negative, what type of good is it?",
+    choicesTeam1: [
+      "A. Normal good",
+      "B. Inferior good",
+      "C. Substitute good",
+      "D. Complementary good"
+    ],
+    choicesTeam2: [
+      "1. Normal good",
+      "2. Inferior good",
+      "3. Substitute good",
+      "4. Complementary good"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "A negative income elasticity of demand indicates an inferior good, meaning demand decreases as income rises."
+  },
+  {
+    question: "Which of the following is an example of a positive externality?",
+    choicesTeam1: [
+      "A. Pollution from a factory",
+      "B. Vaccinations reducing disease spread",
+      "C. A company emitting harmful gases",
+      "D. A monopolist charging higher prices"
+    ],
+    choicesTeam2: [
+      "1. Pollution from a factory",
+      "2. Vaccinations reducing disease spread",
+      "3. A company emitting harmful gases",
+      "4. A monopolist charging higher prices"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "Vaccinations provide a positive externality by benefiting not only the vaccinated individual but also others through reduced disease spread."
+  },
+  {
+    question: "What is the primary difference between explicit and implicit costs?",
+    choicesTeam1: [
+      "A. Explicit costs involve monetary transactions; implicit costs do not",
+      "B. Explicit costs include opportunity costs, while implicit costs do not",
+      "C. Implicit costs involve monetary transactions; explicit costs do not",
+      "D. There is no difference between explicit and implicit costs"
+    ],
+    choicesTeam2: [
+      "1. Explicit costs involve monetary transactions; implicit costs do not",
+      "2. Explicit costs include opportunity costs, while implicit costs do not",
+      "3. Implicit costs involve monetary transactions; explicit costs do not",
+      "4. There is no difference between explicit and implicit costs"
+    ],
+    correctTeam1: "A",
+    correctTeam2: "1",
+    explanation: "Explicit costs require monetary payment (e.g., wages, rent), while implicit costs represent foregone opportunities, such as the owner's time."
+  },
+  {
+    question: "What is the primary reason monopolies create deadweight loss?",
+    choicesTeam1: [
+      "A. Monopolies charge a price below marginal cost",
+      "B. Monopolies restrict output below the socially efficient level",
+      "C. Monopolies eliminate consumer surplus entirely",
+      "D. Monopolies operate at allocative efficiency"
+    ],
+    choicesTeam2: [
+      "1. Monopolies charge a price below marginal cost",
+      "2. Monopolies restrict output below the socially efficient level",
+      "3. Monopolies eliminate consumer surplus entirely",
+      "4. Monopolies operate at allocative efficiency"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "Monopolies restrict output to maximize profit, resulting in a loss of potential welfare (deadweight loss) to society."
+  },
+  {
+    question: "What is the main characteristic of a public good?",
+    choicesTeam1: [
+      "A. It is rival and excludable",
+      "B. It is rival but not excludable",
+      "C. It is non-rival and non-excludable",
+      "D. It is excludable but not rival"
+    ],
+    choicesTeam2: [
+      "1. It is rival and excludable",
+      "2. It is rival but not excludable",
+      "3. It is non-rival and non-excludable",
+      "4. It is excludable but not rival"
+    ],
+    correctTeam1: "C",
+    correctTeam2: "3",
+    explanation: "Public goods are non-rival (one person's use doesn't reduce availability for others) and non-excludable (it's difficult to prevent non-payers from using them)."
+  }
+];
+
+
+    let currentQuestionIndex = 0;
+    let team1Score = 0;
+    let team2Score = 0;
+    let team1Answered = false;
+    let team2Answered = false;
+
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        endGame();
+        return;
+      }
+
+      const question = questions[currentQuestionIndex];
+      document.querySelector('.question').innerText = question.question;
+
+      const team1Buttons = document.querySelectorAll('#team1-choices button');
+      const team2Buttons = document.querySelectorAll('#team2-choices button');
+
+      team1Buttons.forEach((btn, idx) => {
+        btn.innerText = question.choicesTeam1[idx];
+        btn.disabled = false;
+      });
+
+      team2Buttons.forEach((btn, idx) => {
+        btn.innerText = question.choicesTeam2[idx];
+        btn.disabled = false;
+      });
+
+      team1Answered = false;
+      team2Answered = false;
+    }
+
+function checkAnswer(team, answer) {
+  const question = questions[currentQuestionIndex];
+  let isCorrect = false;
+
+  if (team === "team1" && !team1Answered) {
+    team1Answered = true;
+    if (answer === question.correctTeam1) {
+      team1Score++;
+      isCorrect = true;
+      alert("Team 1 answered correctly!");
+    } else {
+      alert("Team 1 is incorrect.");
+    }
+  } else if (team === "team2" && !team2Answered) {
+    team2Answered = true;
+    if (answer === question.correctTeam2) {
+      team2Score++;
+      isCorrect = true;
+      alert("Team 2 answered correctly!");
+    } else {
+      alert("Team 2 is incorrect.");
+    }
+  }
+
+  updateScoreboard();
+
+  // Automatically load the next question if answered correctly
+  if (isCorrect) {
+    currentQuestionIndex++;
+    loadQuestion();
+  } else if (team1Answered && team2Answered) {
+    // Show explanation if both teams answered incorrectly
+    if (answer !== question.correctTeam1 && answer !== question.correctTeam2) {
+      alert("Explanation: " + question.explanation);
+    }
+    currentQuestionIndex++;
+    loadQuestion();
+  }
+}
+
+    function updateScoreboard() {
+      document.querySelector('.scoreboard').innerText = `Team 1: ${team1Score} | Team 2: ${team2Score}`;
+    }
+
+    function endGame() {
+      const winner = team1Score > team2Score ? "Team 1" : team2Score > team1Score ? "Team 2" : "No one";
+      alert(`Game Over! ${winner} wins!\nFinal Score: Team 1: ${team1Score} | Team 2: ${team2Score}`);
+    }
+
+    // Load the first question
+    loadQuestion();
+  </script>
+</body>
+</html>
